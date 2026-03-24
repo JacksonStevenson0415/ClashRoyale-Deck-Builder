@@ -1,0 +1,107 @@
+// Prisma Schema for Clash Royale Deck Builder
+// This file defines all the tables in our PostgreSQL database.
+// Think of each "model" as a table, and each field as a column.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER - Stores account information
+// ============================================
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  decks     Deck[]
+  hatedCards UserHatedCard[]
+}
+
+// ============================================
+// CARD - All Clash Royale cards from the API
+// ============================================
+model Card {
+  id        Int      @id
+  name      String
+  elixir    Int
+  type      String
+  rarity    String
+  iconUrl   String
+
+  hatedBy      UserHatedCard[]
+  decksIn      DeckCard[]
+  counters     CardCounter[] @relation("CounterCard")
+  counteredBy  CardCounter[] @relation("CounteredCard")
+}
+
+// ============================================
+// CARD_COUNTER - Defines counter relationships
+// Example: "Inferno Tower counters Golem"
+// ============================================
+model CardCounter {
+  id              Int    @id @default(autoincrement())
+  
+  counterCardId   Int
+  counterCard     Card   @relation("CounterCard", fields: [counterCardId], references: [id])
+  
+  counteredCardId Int
+  counteredCard   Card   @relation("CounteredCard", fields: [counteredCardId], references: [id])
+
+  effectiveness   Int    @default(5)
+
+  @@unique([counterCardId, counteredCardId])
+}
+
+// ============================================
+// USER_HATED_CARD - Cards a user hates facing
+// ============================================
+model UserHatedCard {
+  id     Int    @id @default(autoincrement())
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  cardId Int
+  card   Card   @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+}
+
+// ============================================
+// DECK - A saved deck (8 cards)
+// ============================================
+model Deck {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cards     DeckCard[]
+}
+
+// ============================================
+// DECK_CARD - Join table connecting Decks and Cards
+// ============================================
+model DeckCard {
+  id     Int    @id @default(autoincrement())
+
+  deckId String
+  deck   Deck   @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  cardId Int
+  card   Card   @relation(fields: [cardId], references: [id])
+
+  @@unique([deckId, cardId])
+}

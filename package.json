@@ -1,0 +1,15 @@
+{
+  "name": "clash-royale-deckbuilder",
+  "version": "1.0.0",
+  "description": "A Clash Royale deck builder that helps counter specific cards and decks",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
