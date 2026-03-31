@@ -31,7 +31,6 @@ https://github.com/JacksonStevenson0415/ClashRoyale-Deck-Builder
 - Express server with JWT auth fully scaffolded
 - PostgreSQL + Prisma schema + migrations done
 - Auth endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- **Known issue:** `server/src/controllers/auth.controller.ts` line 98 is truncated — missing closing brace, TypeScript compilation fails. Jackson needs to fix this.
 
 ### Frontend (bbutl) — PRs open, pending Jackson's review
 - **PR #1** (`feature/frontend-setup`) — React frontend scaffold
@@ -58,13 +57,11 @@ Frontend tasks remaining (bbutl's responsibility):
 - Main app pages: Dashboard, Deck Builder, Card selector
 
 Backend tasks remaining (Jackson's responsibility):
-- Fix TypeScript error in `auth.controller.ts` line 98
 - Deck and card endpoints (once frontend needs them)
 
 ---
 
 ## Running the App Locally
-
 ```bash
 # Backend (from repo root)
 npm run dev:server   # starts at http://localhost:3001
