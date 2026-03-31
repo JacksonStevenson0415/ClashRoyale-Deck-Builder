@@ -94,5 +94,86 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      // Validation failed - send back the specific errors
-      res.status(400).j
+      res.status(400).json({ error: error.errors[0].message });
+      return;
+    }
+    console.error('Register error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ============================================
+// LOGIN - Sign into an existing account
+// POST /api/auth/login
+// ============================================
+export const login = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validated = loginSchema.parse(req.body);
+
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email: validated.email },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+
+    // Compare the password they sent with the hashed one in the database
+    const passwordMatch = await bcrypt.compare(validated.password, user.password);
+
+    if (!passwordMatch) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+
+    const token = generateToken(user.id);
+
+    res.json({
+      message: 'Logged in successfully!',
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        createdAt: user.createdAt,
+      },
+      token,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors[0].message });
+      return;
+    }
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ============================================
+// GET ME - Get the currently logged-in user
+// GET /api/auth/me
+// ============================================
+export const getMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: (req as any).userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('GetMe error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
